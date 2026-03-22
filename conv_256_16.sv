@@ -375,11 +375,27 @@ module conv_256_16 (
 				// Reads 8 pixels (64-bit) from current block position
 				//=================================================
 				RD_READ: begin
-					bram_rd_en   <= 1'b1;
-					bram_rd_addr <= rd_addr_calc;
-					rd_request   <= 1'b1;
-					// Move to next state (data will be valid after latency)
-					rd_state     <= RD_ACCUMULATE;
+				    bram_rd_en   <= 1'b1;
+				    bram_rd_addr <= rd_addr_calc;
+				    rd_request   <= 1'b1;
+				
+				    if (local_rd == RD_PER_BLK_ROW - 1) begin
+				        local_rd <= 1'b0;
+				        // Advance to next row within block
+				        if (local_row == BLOCK_SIZE - 1) begin
+				            local_row <= 0;
+				            rd_state  <= send_new_img ? RD_IDLE : RD_ACCUMULATE;
+				        end else begin
+				            local_row <= local_row + 1'b1;
+				        end
+				    end else begin
+				        local_rd <= local_rd + 1'b1;
+				    end
+				
+				    if (rd_data_valid) begin
+				        accumulator   <= accumulator + pixel_sum;
+				        block_acc_cnt <= block_acc_cnt + 1;
+				    end
 				end
 
 				//=================================================
