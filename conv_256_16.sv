@@ -14,7 +14,7 @@ module conv_256_16 (
 	input wire [WR_DATA_WIDTH-1:0] int_tdata,
 	input wire int_tvalid,
 	input wire int_tlast,
-	input wire int_tready,
+	output wire int_tready,
 
 	// Convolution Output
 	output reg [255:0] data_out,
@@ -478,7 +478,7 @@ module conv_256_16 (
 				//=================================================
 				RD_DONE: begin
 					if (output_consumed) begin
-						rd_state <= RD_IDLE;
+						rd_state <= send_new_img ? RD_IDLE : RD_DONE;;
 					end
 				end
 
